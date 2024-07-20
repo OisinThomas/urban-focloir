@@ -1,4 +1,5 @@
 export type DictionaryEntry = {
+    author: string;
     id: number;
     related_search_term_id: number;
     en: string;

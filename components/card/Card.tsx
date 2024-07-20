@@ -1,74 +1,96 @@
 import { Card, CardHeader, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { FiTrash2 } from "react-icons/fi";
+import { useState } from "react";
+import { createClient } from "@/utils/supabase/client";
 
 export default function Component({
-    source,
-    target,
-    text,
-    upvote,
-    downvote,
-    flag,
-    author,
-    sourceLanguage,
-    id
+  source,
+  target,
+  text,
+  upvote,
+  downvote,
+  flag,
+  author,
+  authorId,
+  sourceLanguage,
+  id,
+  createdTimestamp,
+  owner,
+  handleDeleteEntry,
+  isDeleting
 }: {
-    source: string,
-    target: string,
-    text: string,
-    upvote: number,
-    downvote: number,
-    flag: boolean,
-    author: string,
-    sourceLanguage: 'en' | 'ga'
-    id: number
+  source: string,
+  target: string,
+  text: string,
+  upvote: number,
+  downvote: number,
+  flag: boolean,
+  author: string,
+    authorId: string,
+  sourceLanguage: 'en' | 'ga',
+  id: number,
+  createdTimestamp: string,
+  owner: boolean,
+  handleDeleteEntry: (id: number) => void,
+  isDeleting: boolean
 }) {
 
-    const generateTweetLink = (source: string, sourceLanguage: 'en' | 'ga', id: number) => {
-        const url = `http://localhost:3000/search/${sourceLanguage}/${source}?e=${id}`;
-        console.log(url)
-        return `https://twitter.com/intent/tweet?text=${encodeURIComponent(url)}`;
-    };
+  const generateTweetLink = (source: string, sourceLanguage: 'en' | 'ga', id: number) => {
+    const url = `http://localhost:3000/search/${sourceLanguage}/${source}?e=${id}`;
+    console.log(url)
+    return `https://twitter.com/intent/tweet?text=${encodeURIComponent(url)}`;
+  };
 
-    return (
-        <Card className="w-full max-w-[600px] mx-auto mt-5">
-            <CardHeader className="relative flex flex-col">
-                <div className="absolute top-10 right-4 mr-4 cursor-pointer">
-                    <Link href={generateTweetLink(source, sourceLanguage, id)} passHref={true}>
-                        <XIcon className="w-6 h-6 text-muted-foreground" />
-                    </Link>
-                </div>
-                <h1 className="text-4xl font-bold text-teal-700">{source}</h1>
-                <h2 className="text-2xl font-bold text-teal-500 italic">{target}</h2>
-            </CardHeader>
-            <CardContent className="space-y-4">
-                <ol className="list-decimal list-inside space-y-2">
-                    {text.split("\n").map((line, index) => (
-                        <p key={index}>{line}</p>
-                    ))}
-                </ol>
-                <p className="font-bold">
-                    by <span className="text-teal-600">{author}</span> December 10, 2004
-                </p>
-                <div className="flex justify-between items-center sm:space-y-0">
-                    <div className="flex space-x-4 items-center">
-                        <Button variant="outline" className="flex items-center space-x-2">
-                            <ThumbsUpIcon className="w-5 h-5" />
-                            <span>{upvote}</span>
-                        </Button>
-                        <Button variant="outline" className="flex items-center space-x-2">
-                            <ThumbsDownIcon className="w-5 h-5" />
-                            <span>{downvote}</span>
-                        </Button>
-                    </div>
-                    <Button variant="outline" className="flex items-center space-x-2 mt-0">
-                        <FlagIcon className="w-5 h-5" />
-                        <span>FLAG</span>
-                    </Button>
-                </div>
-            </CardContent>
-        </Card>
-    );
+  return (
+    <Card className="w-full min-w-[450px] max-w-[600px] mx-auto mt-5">
+      <CardHeader className="relative flex flex-col">
+        <div className="absolute top-10 right-4 mr-4 cursor-pointer">
+          <Link href={generateTweetLink(source, sourceLanguage, id)} passHref={true}>
+            <XIcon className="w-6 h-6 text-muted-foreground" />
+          </Link>
+        </div>
+        <Link href={`/search/${sourceLanguage}/${source}`}><h1 className="text-4xl font-bold text-teal-700">{source}</h1></Link>
+        <Link href={`/search/${sourceLanguage == 'en' ? 'ga' : 'en'}/${target}`}><h2 className="text-2xl font-bold text-teal-500 italic">{target}</h2></Link>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <ol className="list-decimal list-inside space-y-2">
+          {text.split("\n").map((line, index) => (
+            <p key={index}>{line}</p>
+          ))}
+        </ol>
+        <p className="font-bold text-pretty">
+          by <span className="text-teal-600"><Link href={`/search/author/${authorId}`}>{author}</Link></span> on {new Date(createdTimestamp).toLocaleString()}
+        </p>
+        <div className="flex justify-between items-center sm:space-y-0">
+          <div className="flex space-x-4 items-center">
+            <Button variant="outline" className="flex items-center space-x-2">
+              <ThumbsUpIcon className="w-5 h-5" />
+            </Button>
+            <Button variant="outline" className="flex items-center space-x-2">
+              <ThumbsDownIcon className="w-5 h-5" />
+            </Button>
+            {owner && (
+              <Button
+                variant="outline"
+                className="flex items-center space-x-2 border-slate-500 text-slate-500 hover:bg-slate-100 hover:border-slate-700"
+                onClick={() => handleDeleteEntry(id)}
+                disabled={isDeleting}
+              >
+                <FiTrash2 className="w-5 h-5" />
+                <span>Delete</span>
+              </Button>
+            )}
+          </div>
+          <Button variant="outline" className="flex items-center space-x-2 mt-0">
+            <FlagIcon className="w-5 h-5" />
+            <span>FLAG</span>
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
 }
 
 function FlagIcon(props: any) {
