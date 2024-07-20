@@ -1,8 +1,7 @@
 import {
   Card,
   CardHeader,
-  CardContent,
-  CardFooter,
+  CardContent
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -117,6 +116,28 @@ export default function Component({
     await updateState(id.toString(), authorId, { flag: !isFlag });
   }
 
+  const date = new Date(createdTimestamp);
+
+  function getOrdinalSuffix(day: number) {
+      if (day > 3 && day < 21) return 'th';
+      switch (day % 10) {
+          case 1: return 'st';
+          case 2: return 'nd';
+          case 3: return 'rd';
+          default: return 'th';
+      }
+  }
+
+  const options = { day: 'numeric'as const, month: 'long' as const, year: 'numeric' as const};
+  const parts = date.toLocaleDateString('en-US', options).split(' ');
+  
+  const day = parseInt(parts[1], 10);
+  const suffix = getOrdinalSuffix(day);
+  
+  const formattedDate = `${day}${suffix} of ${parts[0].replace(',', '')}, ${parts[2]}`;
+  
+  console.log(formattedDate);  // Output: "20th of Jul, 2024"
+  
   return (
     <Card className="w-full min-w-[450px] max-w-[600px] mx-auto mt-5">
       <CardHeader className="relative flex flex-col">
@@ -129,12 +150,12 @@ export default function Component({
           </Link>
         </div>
         <Link href={`/search/${sourceLanguage}/${source}`}>
-          <h1 className="text-4xl font-bold text-teal-700">{source}</h1>
+          <h1 className="text-4xl font-bold text-teal-700 pr-12 text-pretty">{source}</h1>
         </Link>
         <Link
           href={`/search/${sourceLanguage == "en" ? "ga" : "en"}/${target}`}
         >
-          <h2 className="text-2xl font-bold text-teal-500 italic">{target}</h2>
+          <h2 className="text-2xl font-bold text-teal-500 italic text-pretty">{target}</h2>
         </Link>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -148,7 +169,7 @@ export default function Component({
           <span className="text-teal-600">
             <Link href={`/search/author/${authorId}`}>{author}</Link>
           </span>{" "}
-          on {new Date(createdTimestamp).toLocaleString()}
+          on {formattedDate}
         </p>
         <div className="flex justify-between items-center sm:space-y-0">
           <div className="flex space-x-4 items-center">
